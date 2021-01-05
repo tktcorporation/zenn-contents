@@ -1,4 +1,12 @@
 document:
   - README.md
+  - app/README.md
 ci:
   - .github/**/*
+articles:
+  - app/articles/**/*
+books:
+  - app/books/**/*
+package:
+  - app/package.json
+  - app/package-lock.json
