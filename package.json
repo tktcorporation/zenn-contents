@@ -10,6 +10,13 @@
     "list:books": "zenn list:books"
   },
   "dependencies": {
-    "zenn-cli": "^0.1.162"
+    "turndown": "^7.2.0",
+    "zenn-cli": "^0.1.162",
+    "zod": "^3.25.71"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.10",
+    "@types/turndown": "^5.0.5",
+    "tsx": "^4.20.3"
   }
 }
