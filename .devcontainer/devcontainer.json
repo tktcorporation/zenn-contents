@@ -1,0 +1,36 @@
+{
+  "image": "mcr.microsoft.com/devcontainers/base:bookworm",
+  "mounts": [
+    "source=${env:SSH_AUTH_SOCK},target=/ssh-agent,type=bind,readOnly=true"
+  ],
+  "remoteEnv": {
+    "SSH_AUTH_SOCK": "/ssh-agent"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "enableNonRootDocker": "true",
+      "moby": "true"
+    },
+    "ghcr.io/devcontainers/features/aws-cli:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/node:1": {},
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
+  },
+  "runArgs": [
+    "--env-file",
+    ".devcontainer/devcontainer.env"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "WakaTime.vscode-wakatime",
+        "YoavBls.pretty-ts-errors",
+        "mhutchie.git-graph",
+        "github.vscode-github-actions"
+      ]
+    }
+  },
+  "updateContentCommand": "",
+  "postCreateCommand": "npm i -g @antfu/ni && sudo apt-get install -y ripgrep bc"
+}

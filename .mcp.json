@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["--node-options=--experimental-fetch", "@context7/mcp-server@latest"]
+    }
+  }
+}
