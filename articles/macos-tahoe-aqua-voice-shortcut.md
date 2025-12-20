@@ -3,7 +3,7 @@ title: "macOS Tahoe アップデート後に Aqua Voice のショートカット
 emoji: "🎤"
 type: "tech"
 topics: ["macos", "aquavoice", "troubleshooting"]
-published: true
+published: false
 ---
 
 ## 現象
