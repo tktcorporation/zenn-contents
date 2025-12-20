@@ -16,6 +16,7 @@ Raycast のショートカットは正常に動作していた。
 
 - macOS Tahoe 26.2
 - Aqua Voice 0.11.4
+- ショートカット設定: 左Control + 左Command
 
 ## やったこと
 
