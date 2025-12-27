@@ -53,6 +53,97 @@ npx @tktco/create-devenv push -m "Add new GitHub Action workflow"
 npx @tktco/create-devenv diff
 ```
 
+## 実行例
+
+### init: テンプレートの適用
+
+```bash
+$ npx @tktco/create-devenv init -y
+```
+
+```
+create-devenv v0.6.0
+────────────────────────────────────────
+● Target: /tmp/test-devenv
+
+[1/3] ◆ Fetching template...
+✔ Downloading template from GitHub...
+[2/3] ◆ Selecting modules...
+
+● Auto-selected 4 modules
+
+[3/3] ◆ Applying templates...
+
+  + .mcp.json (added)
+  + .mise.toml (added)
+  + .devcontainer/devcontainer.json (added)
+  + .github/labeler.yml (added)
+  + .github/workflows/issue-link.yml (added)
+  + .github/workflows/label.yml (added)
+  + .claude/settings.json (added)
+  + .devenv.json (added)
+
+────────────────────────────────────────
+✓ Done! 13 added
+
+╭─────────────────╮
+│ Setup complete! │
+╰─────────────────╯
+
+● Installed modules:
+
+  ◆ Root
+    Root config files will be applied
+  ◆ DevContainer
+    Open in VS Code DevContainer for automatic setup
+  ◆ GitHub
+    Auto-labels PRs and links issues on creation
+  ◆ Claude
+    Claude Code project settings will be applied
+```
+
+`-y` オプションで全モジュールを自動選択。対話モードで個別に選ぶこともできる。
+
+### diff: 差分の確認
+
+ローカルで設定を変更した後に `diff` を実行すると、テンプレートとの差分が表示される。
+
+```bash
+$ npx @tktco/create-devenv diff
+```
+
+```
+create-devenv diff
+────────────────────────────────────────
+[1/2] ◆ Fetching template...
+✔ Downloading template from GitHub...
+[2/2] ◆ Detecting changes...
+✔ Analyzing differences...
+
+
+Changes detected:
+──────────────────────────────────────────────────
+  ~1 modified │ 10 unchanged
+
+  ~ .mise.toml
+
+
+Next steps:
+
+  → npx @tktco/create-devenv push
+    Push your local changes to the template repository
+```
+
+差分がなければ「No changes」と表示される。
+
+```
+╭────────────╮
+│ No changes │
+╰────────────╯
+
+● Your local files are in sync with the template
+```
+
 ## 提供しているモジュール
 
 今のところ4つのカテゴリがある。
