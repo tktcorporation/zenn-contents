@@ -94,11 +94,50 @@ create-devenv v0.6.0
 
 プロジェクトで設定を改善したら、`push` でテンプレートリポジトリに PR を送れる。
 
-```bash
-$ npx @tktco/create-devenv push -m "Add custom mise task"
+例えば、`.mise.toml` にカスタムタスクを追加したとする。
+
+```toml
+# .mise.toml に追記
+[tasks.hello]
+run = "echo hello"
+description = "Say hello"
 ```
 
-差分の確認 → ファイル選択 → PR 作成まで対話的に進められる。
+まずは `--dryRun` で差分を確認。
+
+```bash
+$ npx @tktco/create-devenv push --dryRun
+```
+
+```
+create-devenv push
+────────────────────────────────────────
+[1/2] ◆ Fetching template...
+✔ Downloading template from GitHub...
+[2/2] ◆ Detecting changes...
+✔ Analyzing differences...
+
+╭──────────────╮
+│ Dry run mode │
+╰──────────────╯
+
+Files that would be included in PR:
+──────────────────────────────────────────────────
+  ~1 modified │ 11 unchanged
+
+  ~ .mise.toml
+    └─ Content differs from template
+
+● No PR was created (dry run)
+```
+
+テンプレートとの差分があるファイルが検出される。問題なければ `--dryRun` を外して実行。
+
+```bash
+$ npx @tktco/create-devenv push
+```
+
+対話モードでファイル選択 → PR タイトル入力 → PR 作成まで進められる。
 
 ## 提供しているモジュール
 
