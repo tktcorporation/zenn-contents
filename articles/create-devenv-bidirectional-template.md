@@ -106,7 +106,7 @@ description = "Say hello"
 まずは `--dryRun` で差分を確認。
 
 ```bash
-$ npx @tktco/create-devenv push --dryRun -m "Add custom mise task"
+$ npx @tktco/create-devenv push --dryRun
 ```
 
 ```
@@ -134,10 +134,10 @@ Files that would be included in PR:
 テンプレートとの差分があるファイルが検出される。問題なければ `--dryRun` を外して実行。
 
 ```bash
-$ npx @tktco/create-devenv push -m "Add custom mise task"
+$ npx @tktco/create-devenv push
 ```
 
-対話モードでファイルを選択し、PR が作成される。
+対話モードでファイル選択 → PR タイトル入力 → PR 作成まで進められる。
 
 ## 提供しているモジュール
 
