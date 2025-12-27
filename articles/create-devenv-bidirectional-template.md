@@ -36,22 +36,8 @@ https://github.com/tktcorporation/.github
 
 - `init`: テンプレートからプロジェクトに適用（従来のテンプレート機能）
 - `push`: プロジェクトの改善をテンプレートに PR として送信
-- `diff`: 今どれくらい差分があるか確認
 
 従来のテンプレートは一方通行だったけど、`push` で逆方向にも流せるようにした。
-
-## 使い方
-
-```bash
-# 新規プロジェクトにテンプレートを適用
-npx @tktco/create-devenv
-
-# プロジェクトで改善した内容をテンプレートに反映
-npx @tktco/create-devenv push -m "Add new GitHub Action workflow"
-
-# 差分を確認
-npx @tktco/create-devenv diff
-```
 
 ## 実行例
 
@@ -104,45 +90,15 @@ create-devenv v0.6.0
 
 `-y` オプションで全モジュールを自動選択。対話モードで個別に選ぶこともできる。
 
-### diff: 差分の確認
+### push: テンプレートへの反映
 
-ローカルで設定を変更した後に `diff` を実行すると、テンプレートとの差分が表示される。
+プロジェクトで設定を改善したら、`push` でテンプレートリポジトリに PR を送れる。
 
 ```bash
-$ npx @tktco/create-devenv diff
+$ npx @tktco/create-devenv push -m "Add custom mise task"
 ```
 
-```
-create-devenv diff
-────────────────────────────────────────
-[1/2] ◆ Fetching template...
-✔ Downloading template from GitHub...
-[2/2] ◆ Detecting changes...
-✔ Analyzing differences...
-
-
-Changes detected:
-──────────────────────────────────────────────────
-  ~1 modified │ 10 unchanged
-
-  ~ .mise.toml
-
-
-Next steps:
-
-  → npx @tktco/create-devenv push
-    Push your local changes to the template repository
-```
-
-差分がなければ「No changes」と表示される。
-
-```
-╭────────────╮
-│ No changes │
-╰────────────╯
-
-● Your local files are in sync with the template
-```
+差分の確認 → ファイル選択 → PR 作成まで対話的に進められる。
 
 ## 提供しているモジュール
 
@@ -168,7 +124,7 @@ Next steps:
 .devenv.json       # どのモジュールを使っているかの追跡
 ```
 
-`.devenv.json` で選択したモジュールを追跡しているので、`push` や `diff` 時にどのファイルを対象にするか判断できる。
+`.devenv.json` で選択したモジュールを追跡しているので、`push` 時にどのファイルを対象にするか判断できる。
 
 # 実際の運用
 
