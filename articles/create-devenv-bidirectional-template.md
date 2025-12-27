@@ -94,11 +94,61 @@ create-devenv v0.6.0
 
 プロジェクトで設定を改善したら、`push` でテンプレートリポジトリに PR を送れる。
 
+例えば、`.mise.toml` にカスタムタスクを追加したとする。
+
+```toml
+# .mise.toml に追記
+[tasks.hello]
+run = "echo hello"
+description = "Say hello"
+```
+
+まずは `--dryRun` で差分を確認。
+
+```bash
+$ npx @tktco/create-devenv push --dryRun -m "Add custom mise task"
+```
+
+```
+create-devenv push
+────────────────────────────────────────
+[1/2] ◆ Fetching template...
+✔ Downloading template from GitHub...
+[2/2] ◆ Detecting changes...
+✔ Analyzing differences...
+
+╭──────────────╮
+│ Dry run mode │
+╰──────────────╯
+
+Files that would be included in PR:
+──────────────────────────────────────────────────
+  ~1 modified │ 11 unchanged
+
+  ~ .mise.toml
+    └─ Content differs from template
+
+● No PR was created (dry run)
+```
+
+テンプレートとの差分があるファイルが検出される。問題なければ `--dryRun` を外して実行。
+
 ```bash
 $ npx @tktco/create-devenv push -m "Add custom mise task"
 ```
 
-差分の確認 → ファイル選択 → PR 作成まで対話的に進められる。
+対話モードでファイルを選択し、PR が作成される。
+
+#### push のオプション
+
+| オプション | 説明 |
+|-----------|------|
+| `-n, --dryRun` | プレビューのみ（PR を作成しない） |
+| `-m, --message` | PR のタイトルを指定 |
+| `-f, --force` | 確認プロンプトをスキップ |
+| `--no-interactive` | ファイル選択を無効化（差分があるファイルを全て含める） |
+
+CI から自動で push したい場合は `-f --no-interactive` を組み合わせる。
 
 ## 提供しているモジュール
 
