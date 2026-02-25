@@ -3,10 +3,13 @@ title: "AI を使った開発で実践していること"
 emoji: "🤖"
 type: "tech"
 topics: ["ai", "claudecode", "chatgpt", "gemini", "開発環境"]
-published: false
+published: true
 ---
 
-普段の AI の使い分けと、開発時のプラクティスについて書く。
+個人的なメモとしての役割メイン、数ヶ月後に振り返ってもおもしろそう。
+以下、口頭で話した内容をclaudecodeにまとめてもらいました！
+
+普段の AI の使い分けと、開発時のプラクティスについて。
 
 # 使っている AI サービスと用途
 
