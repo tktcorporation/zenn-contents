@@ -56,7 +56,7 @@ Claude Code を使い込むほど `.claude/` 配下のファイルが育って�
 | GitHub Template Repository | 初回コピーのみ | なし | なし |
 | `cookiecutter` / `degit` | 初回生成のみ | なし | なし |
 | Git Submodule | リアルタイム | 可能だが煩雑 | 手動 pull |
-| **ziku** | `pull` で継続取得 | `push` で PR 作成 | `diff` で自動検出 |
+| **ziku** | `pull` で継続取得 | `push` で PR or 直接コピー | `diff` で自動検出 |
 
 どれも「テンプレートからプロジェクトへ」の一方通行。**プロジェクト側の改善をテンプレートに還元する仕組み** がなかった。
 
@@ -64,7 +64,14 @@ Claude Code を使い込むほど `.claude/` 配下のファイルが育って�
 
 ## 1. テンプレートリポジトリを用意する
 
-Organization（または個人アカウント）に `.github` や `.ziku` という名前のリポジトリを作り、同期したいファイルとモジュール定義を置く。
+Organization（または個人アカウント）に `.github` や `.ziku` という名前のリポジトリを作り、`setup` コマンドで初期化する。
+
+```bash
+# テンプレートリポジトリで
+npx ziku setup
+```
+
+これで `.ziku/ziku.jsonc` が作られる。同期したいファイルパターンを定義する。
 
 自分は `tktcorporation/.github` に、こんな構成でテンプレートを管理している。
 
@@ -84,35 +91,42 @@ your-org/.github/
 ├── .mcp.json
 ├── .mise.toml
 └── .ziku/
-    └── modules.jsonc    # どのファイルを同期するかの定義
+    └── ziku.jsonc    # どのファイルを同期するかの定義
 ```
 
-`modules.jsonc` で、どのファイルを同期対象にするかを定義する。
+`ziku.jsonc` で、どのファイルを同期対象にするかを `include` パターンで定義する。テンプレート側もプロジェクト側も同じ形式。
 
 ```jsonc
 {
+  "$schema": "https://raw.githubusercontent.com/tktcorporation/ziku/main/schema/ziku.json",
   "include": [
     ".claude/settings.json",
     ".claude/rules/*.md",
-    ".claude/skills/autonomous-dev/SKILL.md",
-    ".claude/skills/upstream-fix/SKILL.md",
-    ".devcontainer/devcontainer.json",
+    ".claude/skills/**",
+    ".devcontainer/**",
     ".mcp.json",
     ".mise.toml"
   ]
 }
 ```
 
+リモートのテンプレートリポジトリをセットアップすることもできる。
+
+```bash
+# リモートリポジトリに PR で ziku.jsonc を追加
+npx ziku setup --remote --from my-org/my-templates
+```
+
 ## 2. プロジェクトにテンプレートを適用する
 
 ```bash
-npx ziku init --from your-org/.github
+npx ziku --from your-org/.github
 ```
 
-テンプレートリポジトリを指定すると、ダウンロード → ファイル適用まで自動で進む。
+テンプレートリポジトリを指定すると、ダウンロード → ファイル適用まで自動で進む。`--from` を省略すると git remote の Organization から `.ziku` → `.github` の順で自動検出する。
 
 ```
-┌   ziku  v0.26.2
+┌   ziku  v1.0.0
 │
 ●  Target: /path/to/my-project
 │
@@ -140,6 +154,12 @@ npx ziku init --from your-org/.github
 └  Setup complete!
 ```
 
+ローカルのディレクトリをテンプレートとして使うこともできる（GitHub 不要）。
+
+```bash
+npx ziku --from-dir ../my-template
+```
+
 セットアップが終わったら、あとは `pull` と `push` の繰り返し。具体的なユースケースを見ていこう。
 
 # こんなときに便利
@@ -150,11 +170,11 @@ npx ziku init --from your-org/.github
 
 ```bash
 # プロジェクト A で改善をテンプレートに還元
-npx ziku push --message "code-intent-documentation に初期化値の記述ルールを追加"
+npx ziku push -m "code-intent-documentation に初期化値の記述ルールを追加"
 ```
 
 ```
-┌   ziku push  v0.26.2
+┌   ziku push  v1.0.0
 │
 ◇  Fetching template...
 │
@@ -175,13 +195,15 @@ npx ziku push --message "code-intent-documentation に初期化値の記述ル�
 
 テンプレートリポジトリに PR が作られる。マージされたら、他のプロジェクトで `pull` するだけ。
 
+ローカルテンプレート（`--from-dir`）の場合は PR ではなく直接コピーになる。
+
 ```bash
 # プロジェクト B, C で最新テンプレートを取り込む
 npx ziku pull
 ```
 
 ```
-┌   ziku pull  v0.26.2
+┌   ziku pull  v1.0.0
 │
 ◇  Fetching template...
 │
@@ -200,14 +222,14 @@ npx ziku pull
 
 ## 「新しい skill を作ったから全リポジトリに配りたい」
 
-テンプレートに新しい skill を追加した。全プロジェクトで使いたい。
+テンプレートに新しい skill を追加し、`ziku.jsonc` の `include` にもパターンを追加した。`pull` するとファイルだけでなく **新しいパターンも自動でマージ** される。
 
 ```bash
 npx ziku diff --verbose
 ```
 
 ```
-┌   ziku diff  v0.26.2
+┌   ziku diff  v1.0.0
 │
 ◇  Fetching template...
 │
@@ -231,7 +253,7 @@ npx ziku pull    # 新 skill を取り込む
 
 3-way マージなので、プロジェクト側で独自に変えた rules は壊されない。コンフリクトが起きたら git と同じ形式のマーカーが出るので、解決して `pull --continue` すればいい。
 
-## 「settings.json のマージで無駄なコンフリクトが起きる」
+## 「.mcp.json のマージで無駄なコンフリクトが起きる」
 
 `.mcp.json` にテンプレート側とプロジェクト側がそれぞれ別の MCP サーバーを追加した場合、テキストベースの diff だと行の近さでコンフリクトになりがち。
 
@@ -288,27 +310,19 @@ ziku はファイルパターンで同期対象を指定するので、`.claude`
 | カテゴリ | 技術 |
 |---|---|
 | 言語 | TypeScript (ESM) |
-| エラーハンドリング | [Effect](https://effect.website/) |
+| エラーハンドリング | [Effect](https://effect.website/) (DI パターン) |
 | パターンマッチ | [ts-pattern](https://github.com/gvergnaud/ts-pattern) |
 | CLI フレームワーク | [citty](https://github.com/unjs/citty) |
 | 対話 UI | [@clack/prompts](https://github.com/bombshell-dev/clack) |
 | GitHub API | [@octokit/rest](https://github.com/octokit/rest.js) |
 | バリデーション | [Zod](https://zod.dev/) v4 (Branded Types) |
-| リント | [oxlint](https://oxc.rs/) / [ast-grep](https://ast-grep.github.io/) |
+| リント / フォーマット | [oxlint](https://oxc.rs/) / [oxfmt](https://oxc.rs/) / [ast-grep](https://ast-grep.github.io/) |
 
 # 設計のこだわり
 
-## Effect + ts-pattern で型安全なエラーハンドリング
+Effect の DI パターンで外部依存を差し替え可能にし、ts-pattern の exhaustive チェックでハンドル漏れをコンパイル時に検出している。Zod v4 の Branded Types で `BaseContent` / `LocalContent` / `TemplateContent` など、取り違えやすいプリミティブを型レベルで区別しているのもこだわりポイント。
 
-CLI ツールではファイル操作、GitHub API 呼び出し、マージ処理と、エラーが起きる場所が多い。Effect の型レベルでのエラー追跡と、ts-pattern の網羅的パターンマッチを組み合わせることで、「このエラーをハンドルし忘れた」をコンパイル時に検出できるようにしている。
-
-## Zod v4 Branded Types でプリミティブに意味を持たせる
-
-ファイルパス、リポジトリオーナー名、モジュール名など、すべて `string` だと取り違えやすい。Zod v4 の Branded Types で `FilePath`, `Owner`, `RepoName` のように型を分けることで、引数の順序を間違えるとコンパイルエラーになるようにしている。
-
-## 構造化マージで不要なコンフリクトを排除
-
-JSON / JSONC は `jsonc-parser`、TOML は `smol-toml`、YAML は `yaml` パッケージでパースし、オブジェクトのキーレベルで 3-way マージしている。コンフリクトなしで成功した場合のみ構造マージ結果を使い、コンフリクトがある場合やパース失敗時はテキストマージにフォールバックする設計。JSON/JSONC ではローカルのフォーマットとコメントを保持するため `modify/applyEdits` API を使っている。
+構造化マージでは JSON/JSONC（`jsonc-parser`）、TOML（`smol-toml`）、YAML をキーレベルで 3-way マージし、コンフリクト時やパース失敗時はテキストマージにフォールバックする。
 
 # 想定ユーザー
 
