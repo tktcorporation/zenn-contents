@@ -1,12 +1,9 @@
 {
   "mcpServers": {
-    "context7": {
+    "chrome-devtools": {
       "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "@upstash/context7-mcp"
-      ],
+      "command": "bash",
+      "args": [".devcontainer/run-chrome-devtools-mcp.sh"],
       "env": {}
     }
   }
