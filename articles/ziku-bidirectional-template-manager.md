@@ -1,5 +1,5 @@
 ---
-title: "Claude Code の rules / skills を全リポジトリに配る双方向同期CLIツール「ziku」を作った"
+title: "Claude Code の rules/skills を双方向同期するCLIツール「ziku」を作った"
 emoji: "🔄"
 type: "tech"
 topics: ["claudecode", "cli", "devcontainer", "typescript", "oss"]
@@ -10,17 +10,13 @@ published: false
 
 Claude Code の `.claude/rules/` や `.claude/skills/`、ちゃんと全リポジトリで揃えてますか？
 
-自分は最初、手動コピーで頑張っていた。でもリポジトリが 5 個、10 個と増えるにつれて破綻した。あるリポジトリで rules を改善しても、他のリポジトリには反映されない。いつの間にか `.claude/settings.json` もリポジトリごとにバラバラになっていた。
-
-この **「作って終わり問題」** を解決するために、テンプレートとプロジェクトを双方向に同期できる CLI ツール **ziku**（軸）を作った。
-
-https://github.com/tktcorporation/ziku
+自分は最初、手動コピーで頑張っていた。でもリポジトリが増えるにつれて破綻した。あるリポジトリで rules を改善しても、他のリポジトリには反映されない。**テンプレートは作った瞬間から陳腐化が始まる。** この「作って終わり問題」を解決するために、テンプレートとプロジェクトを双方向に同期する CLI ツール **[ziku](https://github.com/tktcorporation/ziku)**（軸）を作った。
 
 ```bash
 npx ziku
 ```
 
-テンプレートからプロジェクトに設定を取り込むだけでなく、プロジェクト側の改善をテンプレートに PR として還元できるのが特徴。`.claude` に限らず `.devcontainer`、GitHub Actions、lint 設定など開発環境テンプレート全般を同期できる。
+プロジェクト側の改善をテンプレートに PR として還元できるのが最大の特徴。`.claude` に限らず `.devcontainer`、GitHub Actions、lint 設定など開発環境テンプレート全般を同期できる。
 
 # なぜ作ったのか
 
@@ -47,7 +43,22 @@ Claude Code を使い込むほど `.claude/` 配下のファイルが育って�
 3. **その改善はテンプレート本体に反映されない**
 4. しばらく経つと、テンプレートは古いまま、各プロジェクトの `.claude/` はそれぞれ独自進化している
 
-結局 **テンプレートは作った瞬間から陳腐化が始まる**。これは `.devcontainer` や CI 設定でも同じ問題が起きる。
+結局テンプレートは作った瞬間から陳腐化が始まる。これは `.devcontainer` や CI 設定でも同じ問題が起きる。
+
+ziku はこの問題を、`push` と `pull` の双方向サイクルで解決する。
+
+```mermaid
+graph LR
+    A["プロジェクトで<br/>rules を改善"] --> B["ziku push<br/>（PR で還元）"]
+    B --> C["テンプレート<br/>リポジトリ"]
+    C --> D["ziku pull<br/>（3-way マージ）"]
+    D --> E["他のプロジェクトに<br/>反映"]
+    E --> A
+
+    style A fill:#e8f4fd,stroke:#2196F3
+    style C fill:#fff3e0,stroke:#FF9800
+    style E fill:#e8f4fd,stroke:#2196F3
+```
 
 # 既存の方法との比較
 
@@ -55,10 +66,142 @@ Claude Code を使い込むほど `.claude/` 配下のファイルが育って�
 |---|---|---|---|
 | GitHub Template Repository | 初回コピーのみ | なし | なし |
 | `cookiecutter` / `degit` | 初回生成のみ | なし | なし |
-| Git Submodule | リアルタイム | 可能だが煩雑 | 手動 pull |
+| Git Submodule | リアルタイム | 可能だが煩雑（変更の還元手順が多く、`.claude/` のように複数ディレクトリに跨る配置も難しい） | 手動 pull |
 | **ziku** | `pull` で継続取得 | `push` で PR or 直接コピー | `diff` で自動検出 |
 
-どれも「テンプレートからプロジェクトへ」の一方通行。**プロジェクト側の改善をテンプレートに還元する仕組み** がなかった。
+**どれも「テンプレートからプロジェクトへ」の一方通行。プロジェクト側の改善をテンプレートに還元する仕組みがなかった。**
+
+# こんなときに便利
+
+## 「rules を改善したけど、他のリポジトリにも反映したい」
+
+プロジェクト A で `code-intent-documentation.md` を改善した。同じ rules を使っているプロジェクト B, C にも反映したい。
+
+```bash
+# プロジェクト A で改善をテンプレートに還元
+npx ziku push -m "code-intent-documentation に初期化値の記述ルールを追加"
+```
+
+```
+┌   ziku push  v1.0.0
+│
+◇  Fetching template...
+│
+◇  Downloading template from GitHub...
+│
+◇  Detecting changes...
+│
+◇  Analyzing differences...
+│
+◇  Files that would be included in PR:
+│
+│  ~ .claude/rules/code-intent-documentation.md
+│
+│  ~1 modified
+│
+◇  PR を作成しました: your-org/.github#12
+```
+
+テンプレートリポジトリに PR が作られる。マージされたら、他のプロジェクトで `pull` するだけ。
+
+ローカルテンプレート（`--from-dir`）の場合は PR ではなく直接コピーになる。
+
+```bash
+# プロジェクト B, C で最新テンプレートを取り込む
+npx ziku pull
+```
+
+```
+┌   ziku pull  v1.0.0
+│
+◇  Fetching template...
+│
+◇  Downloading template from GitHub...
+│
+◇  Detecting changes...
+│
+◇  Applying updates...
+│
+│  ~ .claude/rules/code-intent-documentation.md (3-way merge)
+│
+│  ~1 modified
+│
+└  Pull complete!
+```
+
+## 「新しい skill を作ったから全リポジトリに配りたい」
+
+テンプレートに新しい skill を追加し、`ziku.jsonc` の `include` にもパターンを追加した。`pull` するとファイルだけでなく **新しいパターンも自動でマージ** される。
+
+```bash
+npx ziku diff --verbose
+```
+
+```
+┌   ziku diff  v1.0.0
+│
+◇  Fetching template...
+│
+◇  Downloading template from GitHub...
+│
+◇  Detecting changes...
+│
+◇  Analyzing differences...
+│
+│  + .claude/skills/ui-craft/SKILL.md
+│  + .claude/skills/ui-craft/references/component-libraries.md
+│
+│  +2 added
+│
+└  Run 'ziku pull' to pull changes.
+```
+
+```bash
+npx ziku pull    # 新 skill を取り込む
+```
+
+3-way マージなので、プロジェクト側で独自に変えた rules は壊されない。コンフリクトが起きたら git と同じ形式のマーカーが出るので、解決して `pull --continue` すればいい。
+
+# 構造化マージ
+
+テンプレート同期で地味に厄介なのが、JSON や TOML のマージ。たとえば `.mcp.json` にテンプレート側とプロジェクト側がそれぞれ別の MCP サーバーを追加した場合、テキストベースの diff だと行の近さでコンフリクトになりがち。
+
+ziku は JSON / JSONC / TOML / YAML をパースして、キー・値レベルで **構造化マージ** する。
+
+```jsonc
+// テンプレート側: context7 サーバーを追加
+{
+  "mcpServers": {
+    "chrome-devtools": { "type": "stdio", "command": "..." },
+    "context7": { "type": "stdio", "command": "..." }  // ← テンプレートで追加
+  }
+}
+```
+
+```jsonc
+// プロジェクト側: sentry サーバーを追加
+{
+  "mcpServers": {
+    "chrome-devtools": { "type": "stdio", "command": "..." },
+    "sentry": { "type": "stdio", "command": "..." }  // ← プロジェクトで追加
+  }
+}
+```
+
+```jsonc
+// ziku pull 後のマージ結果（コンフリクトなし）
+{
+  "mcpServers": {
+    "chrome-devtools": { "type": "stdio", "command": "..." },
+    "context7": { "type": "stdio", "command": "..." },
+    "sentry": { "type": "stdio", "command": "..." }
+  }
+}
+```
+
+オブジェクトのキーレベルで差分を検出するので、「両方が別のキーを追加しただけ」という本来衝突すべきでない変更をコンフリクトなしに処理できる。同じキーを両方が変更した場合はローカル側を保持し、テキストマージにフォールバックする。
+
+対応フォーマットは JSON / JSONC（`jsonc-parser`）、TOML（`smol-toml`）、YAML。パースに失敗した場合はテキストベースの 3-way マージにフォールバックするので、未対応のフォーマットでも壊れることはない。
 
 # はじめ方
 
@@ -160,139 +303,7 @@ npx ziku --from your-org/.github
 npx ziku --from-dir ../my-template
 ```
 
-セットアップが終わったら、あとは `pull` と `push` の繰り返し。具体的なユースケースを見ていこう。
-
-# こんなときに便利
-
-## 「rules を改善したけど、他のリポジトリにも反映したい」
-
-プロジェクト A で `code-intent-documentation.md` を改善した。同じ rules を使っているプロジェクト B, C にも反映したい。
-
-```bash
-# プロジェクト A で改善をテンプレートに還元
-npx ziku push -m "code-intent-documentation に初期化値の記述ルールを追加"
-```
-
-```
-┌   ziku push  v1.0.0
-│
-◇  Fetching template...
-│
-◇  Downloading template from GitHub...
-│
-◇  Detecting changes...
-│
-◇  Analyzing differences...
-│
-◇  Files that would be included in PR:
-│
-│  ~ .claude/rules/code-intent-documentation.md
-│
-│  ~1 modified
-│
-◇  PR を作成しました: your-org/.github#12
-```
-
-テンプレートリポジトリに PR が作られる。マージされたら、他のプロジェクトで `pull` するだけ。
-
-ローカルテンプレート（`--from-dir`）の場合は PR ではなく直接コピーになる。
-
-```bash
-# プロジェクト B, C で最新テンプレートを取り込む
-npx ziku pull
-```
-
-```
-┌   ziku pull  v1.0.0
-│
-◇  Fetching template...
-│
-◇  Downloading template from GitHub...
-│
-◇  Detecting changes...
-│
-◇  Applying updates...
-│
-│  ~ .claude/rules/code-intent-documentation.md (3-way merge)
-│
-│  ~1 modified
-│
-└  Pull complete!
-```
-
-## 「新しい skill を作ったから全リポジトリに配りたい」
-
-テンプレートに新しい skill を追加し、`ziku.jsonc` の `include` にもパターンを追加した。`pull` するとファイルだけでなく **新しいパターンも自動でマージ** される。
-
-```bash
-npx ziku diff --verbose
-```
-
-```
-┌   ziku diff  v1.0.0
-│
-◇  Fetching template...
-│
-◇  Downloading template from GitHub...
-│
-◇  Detecting changes...
-│
-◇  Analyzing differences...
-│
-│  + .claude/skills/ui-craft/SKILL.md
-│  + .claude/skills/ui-craft/references/component-libraries.md
-│
-│  +2 added
-│
-└  Run 'ziku pull' to pull changes.
-```
-
-```bash
-npx ziku pull    # 新 skill を取り込む
-```
-
-3-way マージなので、プロジェクト側で独自に変えた rules は壊されない。コンフリクトが起きたら git と同じ形式のマーカーが出るので、解決して `pull --continue` すればいい。
-
-## 「.mcp.json のマージで無駄なコンフリクトが起きる」
-
-`.mcp.json` にテンプレート側とプロジェクト側がそれぞれ別の MCP サーバーを追加した場合、テキストベースの diff だと行の近さでコンフリクトになりがち。
-
-ziku は JSON / JSONC / TOML / YAML をパースして、キー・値レベルで **構造化マージ** する。
-
-たとえば、テンプレートとプロジェクトがそれぞれ別のキーを追加した場合:
-
-```jsonc
-// テンプレート側: context7 サーバーを追加
-{
-  "mcpServers": {
-    "chrome-devtools": { "type": "stdio", "command": "..." },
-    "context7": { "type": "stdio", "command": "..." }  // ← テンプレートで追加
-  }
-}
-```
-
-```jsonc
-// プロジェクト側: sentry サーバーを追加
-{
-  "mcpServers": {
-    "chrome-devtools": { "type": "stdio", "command": "..." },
-    "sentry": { "type": "stdio", "command": "..." }  // ← プロジェクトで追加
-  }
-}
-```
-
-```jsonc
-// ziku pull 後のマージ結果（コンフリクトなし）
-{
-  "mcpServers": {
-    "chrome-devtools": { "type": "stdio", "command": "..." },
-    "context7": { "type": "stdio", "command": "..." },
-    "sentry": { "type": "stdio", "command": "..." }
-  }
-}
-```
-
-オブジェクトのキーレベルで差分を検出するので、「両方が別のキーを追加しただけ」という本来衝突すべきでない変更をコンフリクトなしに処理できる。同じキーを両方が変更した場合はローカル側を保持し、テキストマージにフォールバックする。
+セットアップが終わったら、あとは `pull` と `push` の繰り返し。
 
 # `.claude` 以外にも使える
 
@@ -320,9 +331,11 @@ ziku はファイルパターンで同期対象を指定するので、`.claude`
 
 # 設計のこだわり
 
-Effect の DI パターンで外部依存を差し替え可能にし、ts-pattern の exhaustive チェックでハンドル漏れをコンパイル時に検出している。Zod v4 の Branded Types で `BaseContent` / `LocalContent` / `TemplateContent` など、取り違えやすいプリミティブを型レベルで区別しているのもこだわりポイント。
+## Branded Types で「取り違え」を型で防ぐ
 
-構造化マージでは JSON/JSONC（`jsonc-parser`）、TOML（`smol-toml`）、YAML をキーレベルで 3-way マージし、コンフリクト時やパース失敗時はテキストマージにフォールバックする。
+ziku はテンプレートのファイル内容とプロジェクトのファイル内容を頻繁にやり取りする。どちらも `string` だが、取り違えるとマージ結果が壊れる。Zod v4 の Branded Types で `BaseContent` / `LocalContent` / `TemplateContent` を型レベルで区別し、コンパイル時に検出できるようにしている。
+
+Effect の DI パターンで外部依存（GitHub API、ファイルシステム）を差し替え可能にし、ts-pattern の exhaustive チェックでマージ戦略のハンドル漏れをコンパイル時に検出している。
 
 # 想定ユーザー
 
@@ -334,7 +347,7 @@ Effect の DI パターンで外部依存を差し替え可能にし、ts-patter
 
 テンプレートを「作って終わり」にせず、プロジェクトと一緒に育てていけるツールを目指して作った。自分自身の運用では、あるリポジトリで rules を改善したら `push` でテンプレートに還元し、他のリポジトリで `pull` で取り込むサイクルを日常的に回している。
 
-まだ荒削りな部分もあるけれど、興味があればぜひ触ってみてほしい。Issue や PR も歓迎です。
+v1.0.0 をリリースしたばかりだが、自分の日常開発では既に欠かせないツールになっている。興味があればぜひ触ってみてほしい。Issue や PR も歓迎です。
 
 https://github.com/tktcorporation/ziku
 
