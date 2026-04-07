@@ -3,7 +3,7 @@ title: ".claude/や.mcp.jsonを双方向同期するCLIツール「ziku」"
 emoji: "🔄"
 type: "tech"
 topics: ["claudecode", "cli", "typescript", "oss"]
-published: false
+published: true
 ---
 
 # ziku とは？
