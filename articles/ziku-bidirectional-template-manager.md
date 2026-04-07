@@ -16,7 +16,7 @@ Claude Code の `.claude/rules/` や `.claude/skills/`、ちゃんと全リポ�
 npx ziku
 ```
 
-プロジェクト側の改善をテンプレートに PR として還元できるのが最大の特徴。`.claude` に限らず `.devcontainer`、GitHub Actions、lint 設定など開発環境テンプレート全般を同期できる。
+プロジェクト側の改善をテンプレートに PR として還元できるのが最大の特徴。`.claude` に限らず `.devcontainer`、GitHub Actions、lint 設定など開発環境テンプレート全般を同期できる。現在 v1.0.2。
 
 # なぜ作ったのか
 
@@ -45,7 +45,7 @@ Claude Code を使い込むほど `.claude/` 配下のファイルが育って�
 
 結局テンプレートは作った瞬間から陳腐化が始まる。これは `.devcontainer` や CI 設定でも同じ問題が起きる。
 
-ziku はこの問題を、`push` と `pull` の双方向サイクルで解決する。
+ziku（軸）はこの問題を、`push` と `pull` の双方向サイクルで解決する。テンプレートを「軸」として、すべてのプロジェクトがその上に成り立ち、改善が軸に戻っていく。
 
 ```mermaid
 graph LR
@@ -71,6 +71,17 @@ graph LR
 
 **どれも「テンプレートからプロジェクトへ」の一方通行。プロジェクト側の改善をテンプレートに還元する仕組みがなかった。**
 
+# コマンド一覧
+
+| コマンド | 実行者 | やること |
+|---|---|---|
+| **`setup`** | テンプレート管理者 | テンプレートリポジトリを初期化 |
+| **`init`**（`npx ziku`） | テンプレート利用者 | テンプレートをプロジェクトに適用 |
+| **`pull`** | テンプレート利用者 | テンプレートの最新を取り込む（3-way マージ） |
+| **`push`** | テンプレート利用者 | ローカルの改善をテンプレートに還元（GitHub: PR / ローカル: 直接コピー） |
+| **`diff`** | テンプレート利用者 | ローカルとテンプレートの差分を表示 |
+| **`track`** | テンプレート利用者 | 同期対象のパターンを `ziku.jsonc` に追加 |
+
 # こんなときに便利
 
 ## 「rules を改善したけど、他のリポジトリにも反映したい」
@@ -83,11 +94,7 @@ npx ziku push -m "code-intent-documentation に初期化値の記述ルールを
 ```
 
 ```
-┌   ziku push  v1.0.0
-│
-◇  Fetching template...
-│
-◇  Downloading template from GitHub...
+┌   ziku push  v1.0.2
 │
 ◇  Detecting changes...
 │
@@ -102,9 +109,9 @@ npx ziku push -m "code-intent-documentation に初期化値の記述ルールを
 ◇  PR を作成しました: your-org/.github#12
 ```
 
-テンプレートリポジトリに PR が作られる。マージされたら、他のプロジェクトで `pull` するだけ。
+テンプレートリポジトリに PR が作られる。`push --edit` でPR タイトル・説明を編集してから作成することもできる。マージされたら、他のプロジェクトで `pull` するだけ。
 
-ローカルテンプレート（`--from-dir`）の場合は PR ではなく直接コピーになる。
+ローカルテンプレート（`--from-dir` で初期化した場合）は PR ではなく直接コピーになる。
 
 ```bash
 # プロジェクト B, C で最新テンプレートを取り込む
@@ -112,11 +119,7 @@ npx ziku pull
 ```
 
 ```
-┌   ziku pull  v1.0.0
-│
-◇  Fetching template...
-│
-◇  Downloading template from GitHub...
+┌   ziku pull  v1.0.2
 │
 ◇  Detecting changes...
 │
@@ -138,11 +141,7 @@ npx ziku diff --verbose
 ```
 
 ```
-┌   ziku diff  v1.0.0
-│
-◇  Fetching template...
-│
-◇  Downloading template from GitHub...
+┌   ziku diff  v1.0.2
 │
 ◇  Detecting changes...
 │
@@ -153,14 +152,53 @@ npx ziku diff --verbose
 │
 │  +2 added
 │
+▲  However, 2 untracked file(s) exist outside the sync whitelist:
+│
+│    • .claude/skills/zenn-article-writing/SKILL.md
+│    • .claude/skills/zenn-article-writing/references/popular-article-patterns.md
+│
+●  Use npx ziku track <pattern> to add them, then push to sync.
+│
 └  Run 'ziku pull' to pull changes.
 ```
+
+`diff` は同期対象の差分だけでなく、**同期対象外のファイル**も検出してくれる。`track` で同期対象に追加すれば、次の `push` でテンプレートに還元できる。
 
 ```bash
 npx ziku pull    # 新 skill を取り込む
 ```
 
 3-way マージなので、プロジェクト側で独自に変えた rules は壊されない。コンフリクトが起きたら git と同じ形式のマーカーが出るので、解決して `pull --continue` すればいい。
+
+## 「プロジェクトで作ったファイルを同期対象に追加したい」
+
+`track` コマンドで、`ziku.jsonc` の `include` にパターンを追加できる。`diff` を実行すると、同期対象外のファイルも検出して `track` を案内してくれる。
+
+```bash
+npx ziku track '.claude/skills/zenn-article-writing/**'
+```
+
+`track --list` で現在の同期対象パターンを一覧表示。
+
+```bash
+npx ziku track --list
+```
+
+```
+┌   ziku track  v1.0.2
+│
+●  Tracked patterns:
+│
+│    → .claude/settings.json
+│    → .claude/rules/*.md
+│    → .claude/skills/**
+│    → .devcontainer/**
+│    → .mcp.json
+│
+└  Done.
+```
+
+同期対象を広げてから `push` すれば、テンプレートにもパターンごと反映される。
 
 # 構造化マージ
 
@@ -269,15 +307,11 @@ npx ziku --from your-org/.github
 テンプレートリポジトリを指定すると、ダウンロード → ファイル適用まで自動で進む。`--from` を省略すると git remote の Organization から `.ziku` → `.github` の順で自動検出する。
 
 ```
-┌   ziku  v1.0.0
+┌   ziku init  v1.0.2
 │
 ●  Target: /path/to/my-project
 │
 ●  Template: your-org/.github
-│
-◇  Fetching template...
-│
-◇  Downloading template from GitHub...
 │
 ◇  Applying templates...
 │
@@ -347,7 +381,7 @@ Effect の DI パターンで外部依存（GitHub API、ファイルシステ�
 
 テンプレートを「作って終わり」にせず、プロジェクトと一緒に育てていけるツールを目指して作った。自分自身の運用では、あるリポジトリで rules を改善したら `push` でテンプレートに還元し、他のリポジトリで `pull` で取り込むサイクルを日常的に回している。
 
-v1.0.0 をリリースしたばかりだが、自分の日常開発では既に欠かせないツールになっている。興味があればぜひ触ってみてほしい。Issue や PR も歓迎です。
+自分の日常開発では既に欠かせないツールになっている。あるリポジトリで skill を作ったら `track` → `push` でテンプレートに還元し、他のリポジトリで `pull` で取り込む — このサイクルが回り始めると、テンプレートが生きた資産になる。興味があればぜひ触ってみてほしい。Issue や PR も歓迎です。
 
 https://github.com/tktcorporation/ziku
 
