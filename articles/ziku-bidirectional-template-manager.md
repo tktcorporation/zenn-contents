@@ -13,7 +13,22 @@ published: false
 ziku（軸）は、`.claude/`や`.mcp.json`といった設定フォルダ/ファイルを複数リポジトリ間で双方向に同期する CLI ツールです。
 
 ```bash
-npx ziku
+$ npx ziku --help
+
+Dev environment template manager (ziku v1.0.2)
+
+USAGE ziku init|setup|push|pull|diff|track
+
+COMMANDS
+
+   init    Apply dev environment template to your project
+  setup    Initialize a template repository with .ziku/ziku.jsonc
+   push    Push local changes to the template (PR for GitHub, direct copy for local)
+   pull    Pull latest template updates
+   diff    Show differences between local and template
+  track    Add file patterns to the tracking whitelist in ziku.jsonc 
+
+Use ziku <command> --help for more information about a command.
 ```
 
 主な特徴は
