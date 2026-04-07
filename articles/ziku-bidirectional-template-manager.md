@@ -8,6 +8,8 @@ published: false
 
 # ziku とは？
 
+![](https://storage.googleapis.com/zenn-user-upload/46e5da49041f-20260408.png)
+
 ziku（軸）は、`.claude/`や`.mcp.json`といった設定フォルダ/ファイルを複数リポジトリ間で双方向に同期する CLI ツールです。
 
 ```bash
@@ -44,18 +46,16 @@ Claude Code などの Coding Agent で利用する `.claude/settings.json`、rul
 .mise.toml  # このあたりも使いまわしたり
 ```
 
-
 ```mermaid
-graph LR
-    A["プロジェクトで<br/>設定を改善"] --> B["ziku push<br/>（PR で還元）"]
-    B --> C["テンプレート<br/>リポジトリ"]
-    C --> D["ziku pull<br/>（3-way マージ）"]
-    D --> E["他のプロジェクトに<br/>反映"]
-    E --> A
+graph TB
+    T["テンプレート"] -- pull --> A["リポジトリ A"]
+    T -- pull --> B["リポジトリ B"]
+    A -- push --> T
+    B -- push --> T
 
-    style A fill:#e8f4fd,stroke:#2196F3
-    style C fill:#fff3e0,stroke:#FF9800
-    style E fill:#e8f4fd,stroke:#2196F3
+    style T fill:#fff8e8,stroke:#d4a843
+    style A fill:#e8f0fe,stroke:#5b8db8
+    style B fill:#e8f0fe,stroke:#5b8db8
 ```
 
 # 基本操作
@@ -64,6 +64,13 @@ graph LR
 
 任意のOrganizationに`.github` や `.ziku` の名前でリポジトリを作り、`setup` で初期化します。
 (自動解決先をこの名前にしていますが、どのリポジトリでも指定可能です)
+
+```mermaid
+graph LR
+    CMD([setup]) -->|ziku.jsonc を作成| T["テンプレート"]
+    style CMD fill:#f0e8ff,stroke:#8b6fb0
+    style T fill:#fff8e8,stroke:#d4a843
+```
 
 ```bash
 npx ziku setup
@@ -87,6 +94,14 @@ npx ziku setup
 
 ## プロジェクトへの適用（init）
 
+```mermaid
+graph LR
+    T["テンプレート"] -->|読み取り| CMD([init]) -->|初期化| P["プロジェクト"]
+    style CMD fill:#f0e8ff,stroke:#8b6fb0
+    style T fill:#fff8e8,stroke:#d4a843
+    style P fill:#e8f0fe,stroke:#5b8db8
+```
+
 ```bash
 npx ziku init # `.github` `.ziku` が存在すれば自動解決
 ```
@@ -94,6 +109,14 @@ npx ziku init # `.github` `.ziku` が存在すれば自動解決
 ## 改善をテンプレートに還元する（push）
 
 プロジェクトで設定を改善したら `push` でテンプレートに戻します。
+
+```mermaid
+graph RL
+    P["プロジェクト"] -->|変更を検出| CMD([push]) -->|PR を作成| T["テンプレート"]
+    style CMD fill:#f0e8ff,stroke:#8b6fb0
+    style T fill:#fff8e8,stroke:#d4a843
+    style P fill:#e8f0fe,stroke:#5b8db8
+```
 
 ```bash
 npx ziku push -m "pr-workflow に CI ウォッチの手順を追加"
@@ -118,6 +141,14 @@ npx ziku push -m "pr-workflow に CI ウォッチの手順を追加"
 テンプレートリポジトリに PR が作られます。マージしたら、他のプロジェクトで `pull` して取り込めます。
 
 ## テンプレートの最新を取り込む（pull）
+
+```mermaid
+graph LR
+    T["テンプレート"] -->|最新を取得| CMD([pull]) -->|3-way マージ| P["プロジェクト"]
+    style CMD fill:#f0e8ff,stroke:#8b6fb0
+    style T fill:#fff8e8,stroke:#d4a843
+    style P fill:#e8f0fe,stroke:#5b8db8
+```
 
 ```bash
 npx ziku pull
@@ -145,7 +176,7 @@ npx ziku pull
 npx ziku diff
 ```
 
-同期対象の差分に加えて、まだ同期対象に入っていないファイルも教えてくれます。
+同期対象の差分に加えて、まだ同期対象に入っていないファイルも表示。
 
 ```
 ┌   ziku diff  v1.0.2
@@ -168,6 +199,15 @@ npx ziku diff
 
 新しく作ったファイルを同期対象に入れたいときは `track` を使います。
 
+```mermaid
+graph RL
+    P["プロジェクト"] -->|① パターン追加| CMD([track]) --> P
+    P -.->|② push で反映| T["テンプレート"]
+    style CMD fill:#f0e8ff,stroke:#8b6fb0
+    style T fill:#fff8e8,stroke:#d4a843
+    style P fill:#e8f0fe,stroke:#5b8db8
+```
+
 ```bash
 npx ziku track '.claude/skills/ui-design-research/**'
 ```
@@ -177,7 +217,9 @@ npx ziku track '.claude/skills/ui-design-research/**'
 # おわりに
 
 設定を改善したら `push` で還元し、別のプロジェクトでは `pull` で取り込む。
-`npx ziku` と短いtypeで使えるのも手軽で、手元で便利に使っています。よければ使ってみていただければと。
+`npx ziku` と短いtypeで使えるのも手軽で、手元で便利に使っています。
+
+気になる点、バグ等あればリポジトリまでお願いいたします。
 
 https://github.com/tktcorporation/ziku
 
