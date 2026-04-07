@@ -2,11 +2,11 @@
 title: ".claude/や.mcp.jsonを双方向同期するCLIツール「ziku」"
 emoji: "🔄"
 type: "tech"
-topics: ["claudecode", "cli", "typescript", "oss"]
+topics: ["claudecode", "cli", "typescript", "oss", "bash"]
 published: true
 ---
 
-# ziku とは？
+## ziku とは？
 
 ![](https://storage.googleapis.com/zenn-user-upload/46e5da49041f-20260408.png)
 
@@ -45,7 +45,7 @@ Use ziku <command> --help for more information about a command.
 | Git Submodule | `pull` | `push` | サブモジュールのディレクトリ以下のみ |
 | **ziku** | `pull` | `push` | どのディレクトリでも適用可 |
 
-# 何を解決するか
+## 何を解決するか
 
 Claude Code などの Coding Agent で利用する `.claude/settings.json`、rules、skills、`.mcp.json` 等の設定がプロジェクト間で乖離しがち問題を解決します。
 `npx ziku` のみで動く手軽さで、高頻度のリポジトリ作成/切り替え、Skill作成でもストレスなく双方向同期が可能になり、テンプレートの陳腐化を防ぎます。
@@ -68,14 +68,15 @@ graph TB
     A -- push --> T
     B -- push --> T
 
-    style T fill:#fff8e8,stroke:#d4a843
-    style A fill:#e8f0fe,stroke:#5b8db8
-    style B fill:#e8f0fe,stroke:#5b8db8
+    classDef tpl fill:#eab30833,stroke:#eab308,color:inherit
+    classDef proj fill:#3b82f633,stroke:#3b82f6,color:inherit
+    class T tpl
+    class A,B proj
 ```
 
-# 基本操作
+## 基本操作
 
-## テンプレートリポジトリの初期化（setup）
+### テンプレートリポジトリの初期化（setup）
 
 任意のOrganizationに`.github` や `.ziku` の名前でリポジトリを作り、`setup` で初期化します。
 (自動解決先をこの名前にしていますが、どのリポジトリでも指定可能です)
@@ -83,8 +84,11 @@ graph TB
 ```mermaid
 graph LR
     CMD([setup]) -->|ziku.jsonc を作成| T["テンプレート"]
-    style CMD fill:#f0e8ff,stroke:#8b6fb0
-    style T fill:#fff8e8,stroke:#d4a843
+
+    classDef tpl fill:#eab30833,stroke:#eab308,color:inherit
+    classDef cmd fill:#a855f733,stroke:#a855f7,color:inherit
+    class T tpl
+    class CMD cmd
 ```
 
 ```bash
@@ -107,14 +111,18 @@ npx ziku setup
 }
 ```
 
-## プロジェクトへの適用（init）
+### プロジェクトへの適用（init）
 
 ```mermaid
 graph LR
     T["テンプレート"] -->|読み取り| CMD([init]) -->|初期化| P["プロジェクト"]
-    style CMD fill:#f0e8ff,stroke:#8b6fb0
-    style T fill:#fff8e8,stroke:#d4a843
-    style P fill:#e8f0fe,stroke:#5b8db8
+
+    classDef tpl fill:#eab30833,stroke:#eab308,color:inherit
+    classDef proj fill:#3b82f633,stroke:#3b82f6,color:inherit
+    classDef cmd fill:#a855f733,stroke:#a855f7,color:inherit
+    class T tpl
+    class P proj
+    class CMD cmd
 ```
 
 ```bash
@@ -143,16 +151,20 @@ npx ziku init # `.github` `.ziku` が存在すれば自動解決
 └  Setup complete!
 ```
 
-## 改善をテンプレートに還元する（push）
+### 改善をテンプレートに還元する（push）
 
 プロジェクトで設定を改善したら `push` でテンプレートに戻します。
 
 ```mermaid
 graph RL
     P["プロジェクト"] -->|変更を検出| CMD([push]) -->|PR を作成| T["テンプレート"]
-    style CMD fill:#f0e8ff,stroke:#8b6fb0
-    style T fill:#fff8e8,stroke:#d4a843
-    style P fill:#e8f0fe,stroke:#5b8db8
+
+    classDef tpl fill:#eab30833,stroke:#eab308,color:inherit
+    classDef proj fill:#3b82f633,stroke:#3b82f6,color:inherit
+    classDef cmd fill:#a855f733,stroke:#a855f7,color:inherit
+    class T tpl
+    class P proj
+    class CMD cmd
 ```
 
 ```bash
@@ -177,14 +189,18 @@ npx ziku push -m "pr-workflow に CI ウォッチの手順を追加"
 
 テンプレートリポジトリに PR が作られます。マージしたら、他のプロジェクトで `pull` して取り込めます。
 
-## テンプレートの最新を取り込む（pull）
+### テンプレートの最新を取り込む（pull）
 
 ```mermaid
 graph LR
     T["テンプレート"] -->|最新を取得| CMD([pull]) -->|3-way マージ| P["プロジェクト"]
-    style CMD fill:#f0e8ff,stroke:#8b6fb0
-    style T fill:#fff8e8,stroke:#d4a843
-    style P fill:#e8f0fe,stroke:#5b8db8
+
+    classDef tpl fill:#eab30833,stroke:#eab308,color:inherit
+    classDef proj fill:#3b82f633,stroke:#3b82f6,color:inherit
+    classDef cmd fill:#a855f733,stroke:#a855f7,color:inherit
+    class T tpl
+    class P proj
+    class CMD cmd
 ```
 
 ```bash
@@ -207,7 +223,7 @@ npx ziku pull
 
 3-way マージなので、プロジェクト側で独自に変えた部分はそのまま残ります。コンフリクトが起きたら git と同じマーカーが出るので、解決して `pull --continue` で続行できます。
 
-## 差分の確認（diff）
+### 差分の確認（diff）
 
 ```bash
 npx ziku diff
@@ -232,7 +248,7 @@ npx ziku diff
 └  Tracked files are in sync, but untracked files exist.
 ```
 
-## 同期対象の追加（track）
+### 同期対象の追加（track）
 
 新しく作ったファイルを同期対象に入れたいときは `track` を使います。
 
@@ -240,9 +256,13 @@ npx ziku diff
 graph RL
     P["プロジェクト"] -->|① パターン追加| CMD([track]) --> P
     P -.->|② push で反映| T["テンプレート"]
-    style CMD fill:#f0e8ff,stroke:#8b6fb0
-    style T fill:#fff8e8,stroke:#d4a843
-    style P fill:#e8f0fe,stroke:#5b8db8
+
+    classDef tpl fill:#eab30833,stroke:#eab308,color:inherit
+    classDef proj fill:#3b82f633,stroke:#3b82f6,color:inherit
+    classDef cmd fill:#a855f733,stroke:#a855f7,color:inherit
+    class T tpl
+    class P proj
+    class CMD cmd
 ```
 
 ```bash
@@ -262,7 +282,7 @@ npx ziku track '.claude/skills/ui-design-research/**'
 
 追加したら `push` すればテンプレートに反映されます。他のプロジェクトで `pull` すると、ファイルと一緒に新しいパターンもマージされます。
 
-# おわりに
+## おわりに
 
 設定を改善したら `push` で還元し、別のプロジェクトでは `pull` で取り込む。
 `npx ziku` と短いtypeで使えるのも手軽で、手元で便利に使っています。
