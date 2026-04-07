@@ -106,6 +106,28 @@ graph LR
 npx ziku init # `.github` `.ziku` が存在すれば自動解決
 ```
 
+```bash
+┌   ziku  v1.0.2
+│
+●  Target: /path/to/my-project
+│
+●  Template: your-org/.github
+│
+●  Selected 3 directories
+│
+◇  Applying templates...
+│
+│  + .claude/rules/pr-workflow.md
+│  + .claude/skills/ui-craft/SKILL.md
+│  + .mcp.json
+│  + .ziku/ziku.jsonc
+│  + .ziku/lock.json
+│
+│  5 added
+│
+└  Setup complete!
+```
+
 ## 改善をテンプレートに還元する（push）
 
 プロジェクトで設定を改善したら `push` でテンプレートに戻します。
@@ -122,7 +144,7 @@ graph RL
 npx ziku push -m "pr-workflow に CI ウォッチの手順を追加"
 ```
 
-```
+```bash
 ┌   ziku push  v1.0.2
 │
 ◇  Detecting changes...
@@ -154,7 +176,7 @@ graph LR
 npx ziku pull
 ```
 
-```
+```bash
 ┌   ziku pull  v1.0.2
 │
 ◇  Detecting changes...
@@ -178,7 +200,7 @@ npx ziku diff
 
 同期対象の差分に加えて、まだ同期対象に入っていないファイルも表示。
 
-```
+```bash
 ┌   ziku diff  v1.0.2
 │
 ◇  Detecting changes...
@@ -210,6 +232,17 @@ graph RL
 
 ```bash
 npx ziku track '.claude/skills/ui-design-research/**'
+```
+
+```bash
+┌   ziku track  v1.0.2
+│
+◆  Patterns added!
+│
+│  Added:
+│    + .claude/skills/ui-design-research/**
+│
+└  Updated .ziku/ziku.jsonc
 ```
 
 追加したら `push` すればテンプレートに反映されます。他のプロジェクトで `pull` すると、ファイルと一緒に新しいパターンもマージされます。
