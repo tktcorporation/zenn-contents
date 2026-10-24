@@ -9,20 +9,23 @@
     "list:articles": "zenn list:articles",
     "list:books": "zenn list:books",
     "lint:text": "textlint articles/*.md",
-    "lint:text:fix": "textlint --fix articles/*.md"
+    "lint:text:fix": "textlint --fix articles/*.md",
+    "agent-adapters:generate": "bun scripts/generate-agent-adapters.ts",
+    "agent-adapters:check": "bun scripts/generate-agent-adapters.ts --check"
   },
   "dependencies": {
-    "turndown": "^7.2.0",
-    "zenn-cli": "^0.1.162",
-    "zod": "^3.25.71"
+    "turndown": "^7.2.4",
+    "zenn-cli": "^0.5.6",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@textlint-ja/textlint-rule-preset-ai-writing": "^1.6.3",
-    "@types/node": "^24.0.10",
-    "@types/turndown": "^5.0.5",
-    "textlint": "^15.5.2",
+    "@textlint-ja/textlint-rule-preset-ai-writing": "^1.7.0",
+    "@types/node": "^24.12.2",
+    "@types/turndown": "^5.0.6",
+    "textlint": "^15.8.0",
     "textlint-rule-preset-ja-technical-writing": "^12.0.2",
     "textlint-rule-preset-japanese": "^10.0.4",
-    "tsx": "^4.20.3"
-  }
+    "tsx": "^4.23.15"
+  },
+  "packageManager": "pnpm@10.28.0"
 }
