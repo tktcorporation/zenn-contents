@@ -7,34 +7,34 @@ Zenn CLIがインストールされ、プロジェクトの初期化が完了し
 
 ### 1. 記事の作成
 ```bash
-npm run new:article
+pnpm new:article
 # または
-npx zenn new:article
+pnpm exec zenn new:article
 ```
 - `articles/`ディレクトリに新しいMarkdownファイルが作成されます
 - ファイル名はランダムなスラッグ（ID）になります
 
 ### 2. 本の作成
 ```bash
-npm run new:book
+pnpm new:book
 # または
-npx zenn new:book
+pnpm exec zenn new:book
 ```
 
 ### 3. プレビュー
 ```bash
-npm run preview
+pnpm preview
 # または
-npx zenn preview
+pnpm exec zenn preview
 ```
 - `http://localhost:8000`でプレビューが確認できます
 - ファイルを保存すると自動的にリロードされます
 
 ### 4. 記事一覧の確認
 ```bash
-npm run list:articles
+pnpm list:articles
 # または
-npx zenn list:articles
+pnpm exec zenn list:articles
 ```
 
 ## 記事の管理
@@ -84,17 +84,17 @@ mkdir images
 
 | コマンド | 説明 |
 |---------|------|
-| `npm run preview` | プレビューサーバーを起動 |
-| `npm run new:article` | 新しい記事を作成 |
-| `npm run new:book` | 新しい本を作成 |
-| `npm run list:articles` | 記事一覧を表示 |
-| `npm run list:books` | 本の一覧を表示 |
+| `pnpm preview` | プレビューサーバーを起動 |
+| `pnpm new:article` | 新しい記事を作成 |
+| `pnpm new:book` | 新しい本を作成 |
+| `pnpm list:articles` | 記事一覧を表示 |
+| `pnpm list:books` | 本の一覧を表示 |
 
 ## トラブルシューティング
 
 ### プレビューが表示されない
-- Node.js 14以上がインストールされているか確認
-- `npm install`でパッケージが正しくインストールされているか確認
+- Node.js 22.12以上がインストールされているか確認
+- `pnpm install`でパッケージが正しくインストールされているか確認（`npm install`は使わない。`pnpm-workspace.yaml`の公開直後の版を避ける設定が効かなくなる）
 
 ### 画像が表示されない
 - `/images`ディレクトリに画像を配置しているか確認
@@ -103,7 +103,7 @@ mkdir images
 ### CLIのアップデート
 最新版へのアップデート：
 ```bash
-npm update zenn-cli
+pnpm update zenn-cli
 ```
 
 ## 詳細情報

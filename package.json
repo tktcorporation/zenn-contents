@@ -24,5 +24,6 @@
     "textlint-rule-preset-ja-technical-writing": "^12.0.2",
     "textlint-rule-preset-japanese": "^10.0.4",
     "tsx": "^4.23.15"
-  }
+  },
+  "packageManager": "pnpm@10.28.0"
 }
