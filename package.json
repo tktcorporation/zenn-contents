@@ -9,7 +9,9 @@
     "list:articles": "zenn list:articles",
     "list:books": "zenn list:books",
     "lint:text": "textlint articles/*.md",
-    "lint:text:fix": "textlint --fix articles/*.md"
+    "lint:text:fix": "textlint --fix articles/*.md",
+    "agent-adapters:generate": "bun scripts/generate-agent-adapters.ts",
+    "agent-adapters:check": "bun scripts/generate-agent-adapters.ts --check"
   },
   "dependencies": {
     "turndown": "^7.2.4",

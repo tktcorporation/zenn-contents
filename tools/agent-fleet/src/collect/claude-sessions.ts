@@ -66,7 +66,7 @@ export function isClaudeProcess(pid: number): boolean {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore'],
     });
-    return /(?:^|[\\/\\s])claude(?:-code)?(?:[\\s]|$)/i.test(command);
+    return /(?:^|[\/\s])claude(?:-code)?(?:\s|$)/i.test(command);
   } catch {
     return false;
   }

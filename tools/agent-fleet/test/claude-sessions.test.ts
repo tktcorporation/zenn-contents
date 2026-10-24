@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from 'bun:test';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
@@ -80,6 +80,20 @@ describe('isProcessAlive', () => {
 describe('isClaudeProcess', () => {
   test('Claude ではない自プロセスはセッションとして扱わない', () => {
     expect(isClaudeProcess(process.pid)).toBe(false);
+  });
+
+  test('引数付きで起動した claude のプロセスを Claude として扱う', () => {
+    // `ps` が返すコマンドが `claude 20` になるよう、sleep を claude という名前で起動する。
+    const dir = mkdtempSync(join(tmpdir(), 'agent-fleet-claude-'));
+    const claude = join(dir, 'claude');
+    symlinkSync(Bun.which('sleep') ?? '/bin/sleep', claude);
+    const child = Bun.spawn(['claude', '20'], { env: { ...process.env, PATH: dir } });
+    try {
+      expect(isClaudeProcess(child.pid)).toBe(true);
+    } finally {
+      child.kill();
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
 
